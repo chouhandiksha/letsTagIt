@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<style type="text/css">
+  #cameraFileInput {
+  display: none;
+}
+#pictureFromCamera {
+  width: 100%;
+  height: auto;
+  margin-top: 16px;
+}
+.btn {
+  display: inline-block;
+  background-color: #00b531;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+.btn:hover {
+  filter: brightness(0.9);
+}
+view raw
+</style>
+  <head>
+
+
+    <!-- These meta tags are not necessary for the camera to work -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Camera in browsers - pixo</title>
+
+    <!-- imports the webpage's stylesheet -->
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- imports the webpage's javascript file -->
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+     <center>
+        <h1><font color="Blue">
+            Hashtag Search Application
+        </font>
+        </h1>
+     <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script class="jsbin" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+  
+  
+    <script type="text/javascript">
+    $(document).ready(function(){
+
+        $("#but_upload").click(function(){
+
+            // var fd = new FormData();
+            var files = $('#file')[0].files[0];
+            // var customLabels = document.getElementById("customlabels").value;
+            // console.log(customLabels)
+            let config = {
+                headers:{'file-name': files.name}
+            };
+
+            url = 'https://muc7q1z788.execute-api.us-west-2.amazonaws.com/dev/upload-image'
+            console.log(url)
+            axios.put(url,files,config).then(response=>{
+                // console.log(response.data)
+                alert("Upload successful!!");
+            })
+        });
+    });
+    </script>
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<!--     <h1>Demo - Native camera in browsers</h1>
+    <label for="#file">
+      <span class="btn">Open camera</span>
+
+      The hidden file `input` for opening the native camera
+      <input
+        id="cameraFileInput"
+        type="file"
+        accept="image/*"
+        capture="environment"
+      />
+    </label> -->
+ <div class="container">
+        <form method="post" action="" enctype="multipart/form-data" id="myform">
+            <div >
+                <input type="file" id="file" name="file"/>
+                <input type="button" class="button" value="Upload Image" id="but_upload">
+            </div>
+        </form>
+    </div>
+    <!-- displays the picture uploaded from the native camera -->
+    <img id="pictureFromCamera" />
+  </body>
+</html> 
