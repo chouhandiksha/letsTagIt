@@ -9,6 +9,13 @@
   height: auto;
   margin-top: 16px;
 }
+#loading {
+position: fixed;
+width: 100%;
+height: 100vh;
+background: #fff url('images/loader.gif') no-repeat center center;
+z-index: 9999;
+}
 .btn {
   display: inline-block;
   background-color: #00b531;
@@ -31,7 +38,7 @@ view raw
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Camera in browsers - pixo</title>
+    <title>Let's Tagg It!</title>
 
     <!-- imports the webpage's stylesheet -->
     <link rel="stylesheet" href="style.css" />
@@ -55,20 +62,52 @@ view raw
     $(document).ready(function(){
 
         $("#but_upload").click(function(){
+          jQuery('#loading').fadeOut(3000);
+        document.getElementById("images").innerHTML=" "
+                document.getElementById("p").innerHTML=" "
 
             // var fd = new FormData();
             var files = $('#file')[0].files[0];
             // var customLabels = document.getElementById("customlabels").value;
             // console.log(customLabels)
             let config = {
-                headers:{'file-name': files.name}
+                headers:{'file-name': files.name,
+               'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,X-Amz-Security-Token,Authorization,X-Api-Key,X-Requested-With,Accept,Access-Control-Allow-Methods,Access-Control-Allow-Origin,Access-Control-Allow-Headers',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT',
+    'X-Requested-With': '*'}
             };
 
             url = 'https://muc7q1z788.execute-api.us-west-2.amazonaws.com/dev/upload-image'
             console.log(url)
             axios.put(url,files,config).then(response=>{
-                // console.log(response.data)
+                console.log(response.data)
                 alert("Upload successful!!");
+                 if (response.data.length>0){
+      var paragraph = document.getElementById("p");
+
+      // paragraph.appendChild(text);     
+   document.getElementById("images").innerHTML+='<center><h2><font color=Blue>Here are the trending tags From Twitter<font></h2></center><div>'
+     }
+     else{
+          document.getElementById("images").innerHTML+='<center><h2><font color=Blue>No Tags Found for the choice. Please upload another one!<font></h2></center><div>'
+
+     }
+
+        // res.forEach( function(obj) {
+          for (var i = 0; i < response.data.length; i++) {
+          // console.log(res[i]);
+            // var img = new Image();
+            // img.src = obj;
+            // img.setAttribute("class", "banner-img");
+            // img.setAttribute("alt", "effy");
+
+paragraph.textContent += "#"+response.data[i][0]+" ";
+            // document.getElementById("images").appendChild(elem)
+            // // document.getElementById("img-container").appendChild(img);
+            // // document.getElementById("images").style.display = "block";
+
+          };
             })
         });
     });
@@ -94,6 +133,13 @@ view raw
             </div>
         </form>
     </div>
+      <div class="container">
+        <div id="images">
+        </div>
+    </div>
+    <div id="loading"></div>
+
+    <p id="p">
     <!-- displays the picture uploaded from the native camera -->
     <img id="pictureFromCamera" />
   </body>
