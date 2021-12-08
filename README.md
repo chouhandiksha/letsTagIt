@@ -1,7 +1,5 @@
 # letsTagIt
 
-## Resto-Finder
-
 
 
 
