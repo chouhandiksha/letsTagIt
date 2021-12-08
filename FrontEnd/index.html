@@ -8,38 +8,375 @@
     <script src="./script/aws-sdk-2.487.0.min.js"></script>
     <script src="./script/aws-cognito-sdk.min.js"></script>
     <script src="./script/amazon-cognito-identity.min.js"></script>
-    <script src="./script/index.js"></script>
+    <!-- <script src="./script/index.js"></script> -->
 
 <div class="wrapper fadeInDown">
   <div id="formContent">
-
     <!-- Tabs Titles -->
-    <h2 class="active" > Sign In </h2>
-    <h2 class="inactive underlineHover">Sign Up </h2>
-
-    <!-- Icon -->
-    <div class="fadeIn first">
-
-
-
       <img src="https://static.thenounproject.com/png/650376-200.png" id="icon" alt="User Icon" />
-    </div>
+  
 
     <!-- Login Form -->
+    <div id ="signin">
+    <h2 class="active"> Sign In </h2>
+    <h2 onclick ="signup()" class="inactive underlineHover">Sign Up </h2>
+    <!-- Icon -->
+    <div class="fadeIn first">
     <form>
       <input type="text" id="userNameInput" class="fadeIn second" name="login" placeholder="login">
       <input type="password" id="passwordInput" class="fadeIn third" name="login" placeholder="password">
-      <input type="submit" onclick="logIn()" class="fadeIn fourth" value="Log In">
+      <input type="button" onclick="logIn()" class="fadeIn fourth" value="Log In">
     </form>
+    </div>
+  </div>
 
+    <div id ="signup" hidden="true">
+        <!-- Tabs Titles -->
+    <h2 onclick="signin()" class="inactive underlineHover"> Sign In </h2>
+    <h2 class="active underlineHover">Sign Up </h2>
+    <!-- Icon -->
+    <div class="fadeIn first">
+      <form>
+      <input class="fadeIn second" id="emailInput" type="text" placeholder="Email"/></br>
+    <input class="fadeIn second" id="userNameInput1" type="text" placeholder="Username"/></br>
+    <input class="fadeIn second" id="passwordInput1" type="password" placeholder="Password"/></br>
+    <input class="fadeIn second" id="confirmPasswordInput" type="password" placeholder="Confirm Password"/></br>
+      <input type="button" onclick="register()" class="fadeIn fourth" value="Sign Up">
+    <input class="fadeIn second" id="verificationCodeInput" type="text" placeholder="Verification Code" style="display:none"/></br>
+    <input type="button" id="verifyButton" onclick="verifyCode()" class="fadeIn fourth" value="Verify Code" style="display:none">
+
+    </form>
+  </div>
+</div>
     <!-- Remind Passowrd -->
     <div id="formFooter">
       <a class="underlineHover" href="#">Forgot Password?</a>
     </div>
-
   </div>
-</div>
+  </div>
+
+<script type="text/javascript">
+  //=============== AWS IDs ===============
+        var userPoolId = '';
+        var clientId = '';
+        var region = 'us-east-1';
+        var identityPoolId = '';
+        //=============== AWS IDs ===============
+
+        var cognitoUser;
+        var idToken;
+        var userPool;
+        
+        var poolData = { 
+            UserPoolId : userPoolId,
+            ClientId : clientId
+        };
+        
+        // getCurrentLoggedInSession();
+        function signup(){
+          $("#signup").show();
+          $("#signin").hide();
+
+          console.log('entered');
+        }
+           function signin(){
+          $("#signup").hide();
+          $("#signin").show();
+
+          console.log('entered');
+        }
 
 
+        function switchToVerificationCodeView(){
+            $("#emailInput").hide();
+            $("#userNameInput").hide();
+            $("#passwordInput").hide();
+            $("#confirmPasswordInput").hide();
+            $("#logInButton").hide();
+            $("#registerButton").hide();
+            $("#bucketNameInput").hide();
+            $("#verificationCodeInput").show();
+            $("#verifyCodeButton").show();
+            $("#listS3ObjectsButton").hide();
+            $("#logOutButton").hide();
+        }
+
+        // function switchToRegisterView(){
+        //     $("#emailInput").show();
+        //     $("#userNameInput").show();
+        //     $("#passwordInput").show();
+        //     $("#confirmPasswordInput").show();
+        //     $("#logInButton").hide();
+        //     $("#registerButton").show();
+        //     $("#verificationCodeInput").hide();
+        //     $("#verifyCodeButton").hide();
+        //     $("#listS3ObjectsButton").hide();
+        //     $("#bucketNameInput").hide();
+        //     $("#logOutButton").hide();
+        // }
+
+        function switchToLogInView(){
+            $("#userNameInput").val('');
+            $("#passwordInput").val('');
+            $("#emailInput").hide();
+            $("#userNameInput").show();
+            $("#passwordInput").show();
+            $("#confirmPasswordInput").hide();
+            $("#logInButton").show();
+            $("#registerButton").show();
+            $("#verificationCodeInput").hide();
+            $("#verifyCodeButton").hide();
+            $("#listS3ObjectsButton").hide();
+            $("#bucketNameInput").hide();
+            $("#logOutButton").hide();
+        }
+
+        function switchToLoggedInView(){
+            $("#emailInput").hide();
+            $("#userNameInput").hide();
+            $("#passwordInput").hide();
+            $("#confirmPasswordInput").hide();
+            $("#logInButton").hide();
+            $("#registerButton").hide();
+            $("#verificationCodeInput").hide();
+            $("#verifyCodeButton").hide();
+            $("#listS3ObjectsButton").show();
+            $("#bucketNameInput").show();
+            $("#logOutButton").show();
+        }
+
+        function clearLogs(){
+            $('#log').empty();
+        }
+
+        /*
+        Starting point for user logout flow
+        */
+        function logOut(){
+            if (cognitoUser != null) {
+
+                $("#loader").show();
+                cognitoUser.signOut();
+                switchToLogInView();
+                logMessage('Logged out!');
+                $("#loader").hide();
+            }
+        }
+
+        /*
+        Starting point for user login flow with input validation
+        */
+        // Shrd1216$$
+        function logIn(){
+          userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+            if(!$('#userNameInput').val() || !$('#passwordInput').val()){
+                logMessage('Please enter Username and Password!');
+            }else{
+                var authenticationData = {
+                    Username : $('#userNameInput').val(),
+                    Password : $("#passwordInput").val(),
+                };
+                var authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(authenticationData);
+
+                var userData = {
+                    Username : $('#userNameInput').val(),
+                    Pool : userPool
+                };
+                cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+                // $("#loader").show();
+                cognitoUser.authenticateUser(authenticationDetails, {
+                    onSuccess: function (result) {
+                        console.log('Logged in!');
+                        window.location.href = 'captureimage.html';
+
+                        idToken = result.getIdToken().getJwtToken();
+                        // getCognitoIdentityCredentials();
+                    },  
+
+                    onFailure: function(err) {
+                        alert(err.message);
+                        // $("#loader").hide();
+                    },
+
+                });
+            }
+        }
+
+        /*
+        Starting point for user registration flow with input validation
+        */
+        function register(){
+            // switchToRegisterView();
+            console.log("entered registration") 
+            console.log($('#emailInput').val());
+            if( !$('#emailInput').val() || !$('#userNameInput1').val()  || !$('#passwordInput1').val() || !$('#confirmPasswordInput').val()) {
+                    alert('Please fill all the fields!');
+            }else{
+                if($('#passwordInput1').val() == $('#confirmPasswordInput').val()){
+                    registerUser($('#emailInput').val(), $('#userNameInput1').val(), $('#passwordInput1').val());
+                }else{
+                    alert('Confirm password failed!');
+                }
+                
+            }
+        }
+
+        /*
+        Starting point for user verification using AWS Cognito with input validation
+        */
+        function verifyCode(){
+            if( !$('#verificationCodeInput').val() ) {
+                alert('Please enter verification field!');
+            }else{
+                cognitoUser.confirmRegistration($('#verificationCodeInput').val(), true, function(err, result) {
+                    if (err) {
+                        alert(err.message);
+                    }else{
+                        alert('Successfully verified code!');
+                        // switchToLogInView();
+                    }
+                    
+                    // $("#loader").hide();
+                });
+            }
+        }
+
+        /*
+        User registration using AWS Cognito
+        */
+        function registerUser(email, username, password){
+            var attributeList = [];
+            userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+            console.log(email, username, password);
+            var dataEmail = {
+                Name : 'email',
+                Value : email
+            };
+
+            var attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
+            console.log(attributeEmail)
+            attributeList.push(attributeEmail);
+
+            // $("#loader").show();
+            userPool.signUp(username, password, attributeList, null, function(err, result){
+                if (err) {
+                       console.log(err.message);
+                }else{
+                    cognitoUser = result.user;
+                    console.log('Registration Successful!');
+                    console.log('Username is: ' + cognitoUser.getUsername());
+                    console.log('Please enter the verification code sent to your Email.');
+                    $("#verifyButton").show();
+                    $("#verificationCodeInput").show();
+                }
+                $("#loader").hide();
+            });
+        }
+
+        /*
+        Starting point for AWS List S3 Objects flow with input validation
+        */
+        function listS3Objects(){
+            if(!$('#bucketNameInput').val()){
+                logMessage('Please enter the name of the S3 Bucket!');
+            }else{
+                $("#loader").show();
+                getAWSS3BucketObjects();
+            }
+            
+        }
+
+        /*
+        This method will get temporary credentials for AWS using the IdentityPoolId and the Id Token recieved from AWS Cognito authentication provider.
+        */
+        function getCognitoIdentityCredentials(){
+            AWS.config.region = region;
+
+            var loginMap = {};
+            loginMap['cognito-idp.' + region + '.amazonaws.com/' + userPoolId] = idToken;
+
+            AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+                IdentityPoolId: identityPoolId,
+                Logins: loginMap
+            });
+
+            AWS.config.credentials.clearCachedId();
+
+            AWS.config.credentials.get(function(err) {
+                if (err){
+                    logMessage(err.message);
+                }
+                else {
+                    // logMessage('AWS Access Key: '+ AWS.config.credentials.accessKeyId);
+                    // logMessage('AWS Secret Key: '+ AWS.config.credentials.secretAccessKey);
+                    // logMessage('AWS Session Token: '+ AWS.config.credentials.sessionToken);
+                }
+
+                $("#loader").hide();
+            });
+        }
+
+        /*
+        This method will use AWS S3 SDK to get a list of S3 bucket object.
+        Before using this method, AWS Credentials must be set in AWS config.
+        */
+        function getAWSS3BucketObjects(){            
+            var s3 = new AWS.S3();
+
+            var params = {
+                Bucket: $("#bucketNameInput").val()
+            };
+
+            s3.listObjects(params, function(err, data) {
+                if (err) logMessage(err.message);
+                else{
+                    logMessage('');
+                    logMessage('====== S3 Bucket Objects ======');
+                    data.Contents.forEach(element => {
+                        logMessage(element.Key);
+                    });
+                    logMessage('');
+                }
+
+                $("#loader").hide();
+            });
+        }
+
+        /*
+        If user has logged in before, get the previous session so user doesn't need to log in again.
+        */
+        function getCurrentLoggedInSession(){
+
+            $("#loader").show();
+            userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+            cognitoUser = userPool.getCurrentUser();
+
+            if(cognitoUser != null){
+                cognitoUser.getSession(function(err, session) {
+                    if (err) {
+                        logMessage(err.message);l
+                    }else{
+                        logMessage('Session found! Logged in.');
+                        switchToLoggedInView();
+                        idToken = session.getIdToken().getJwtToken();
+                        getCognitoIdentityCredentials();
+                    }
+                    $("#loader").hide();
+                });
+            }else{
+                logMessage('Session expired. Please log in again.');
+                $("#loader").hide();
+            }
+
+        }
+
+        /*
+        This is a logging method that will be used throught the application
+        */
+        function logMessage(message){
+            $('#log').append(message + '</br>');
+        }
+</script>
 </body>
 </html>
