@@ -9,7 +9,72 @@
     <script src="./script/aws-cognito-sdk.min.js"></script>
     <script src="./script/amazon-cognito-identity.min.js"></script>
     <!-- <script src="./script/index.js"></script> -->
+<style type="text/css">
+  input[type=button], input[type=submit], input[type=reset]  {
+  background-color: #56baed;
+  border: none;
+  color: white;
+  padding: 15px 80px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  text-transform: uppercase;
+  font-size: 13px;
+  -webkit-box-shadow: 0 10px 30px 0 rgba(95,186,233,0.4);
+  box-shadow: 0 10px 30px 0 rgba(95,186,233,0.4);
+  -webkit-border-radius: 5px 5px 5px 5px;
+  border-radius: 5px 5px 5px 5px;
+  margin: 5px 20px 40px 20px;
+  -webkit-transition: all 0.3s ease-in-out;
+  -moz-transition: all 0.3s ease-in-out;
+  -ms-transition: all 0.3s ease-in-out;
+  -o-transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+}
 
+input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover  {
+  background-color: #39ace7;
+}
+
+input[type=button]:active, input[type=submit]:active, input[type=reset]:active  {
+  -moz-transform: scale(0.95);
+  -webkit-transform: scale(0.95);
+  -o-transform: scale(0.95);
+  -ms-transform: scale(0.95);
+  transform: scale(0.95);
+}
+
+input[type=text], input[type=password] {
+  background-color: #f6f6f6;
+  border: none;
+  color: #0d0d0d;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 5px;
+  width: 85%;
+  border: 2px solid #f6f6f6;
+  -webkit-transition: all 0.5s ease-in-out;
+  -moz-transition: all 0.5s ease-in-out;
+  -ms-transition: all 0.5s ease-in-out;
+  -o-transition: all 0.5s ease-in-out;
+  transition: all 0.5s ease-in-out;
+  -webkit-border-radius: 5px 5px 5px 5px;
+  border-radius: 5px 5px 5px 5px;
+}
+
+input[type=text]:focus {
+  background-color: #fff;
+  border-bottom: 2px solid #5fbae9;
+}
+
+input[type=text]:placeholder {
+  color: #cccccc;
+}
+
+</style>
 <div class="wrapper fadeInDown">
   <div id="formContent">
     <!-- Tabs Titles -->
@@ -57,7 +122,7 @@
 
 <script type="text/javascript">
   //=============== AWS IDs ===============
-        var userPoolId = '';
+        var userPoolId = 'us-east-1_5vjf5sMPD';
         var clientId = '';
         var region = 'us-east-1';
         var identityPoolId = '';
@@ -77,13 +142,11 @@
           $("#signup").show();
           $("#signin").hide();
 
-          console.log('entered');
         }
            function signin(){
           $("#signup").hide();
           $("#signin").show();
 
-          console.log('entered');
         }
 
 
@@ -166,7 +229,7 @@
         /*
         Starting point for user login flow with input validation
         */
-        // Shrd1216$$
+        // 
         function logIn(){
           userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
             if(!$('#userNameInput').val() || !$('#passwordInput').val()){
@@ -182,6 +245,7 @@
                     Username : $('#userNameInput').val(),
                     Pool : userPool
                 };
+                // console.log(userData);
                 cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
                 // $("#loader").show();
                 cognitoUser.authenticateUser(authenticationDetails, {
@@ -207,8 +271,8 @@
         */
         function register(){
             // switchToRegisterView();
-            console.log("entered registration") 
-            console.log($('#emailInput').val());
+            // console.log("entered registration") 
+            // console.log($('#emailInput').val());
             if( !$('#emailInput').val() || !$('#userNameInput1').val()  || !$('#passwordInput1').val() || !$('#confirmPasswordInput').val()) {
                     alert('Please fill all the fields!');
             }else{
@@ -248,14 +312,12 @@
             var attributeList = [];
             userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
 
-            console.log(email, username, password);
             var dataEmail = {
                 Name : 'email',
                 Value : email
             };
 
             var attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
-            console.log(attributeEmail)
             attributeList.push(attributeEmail);
 
             // $("#loader").show();
